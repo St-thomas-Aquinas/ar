@@ -2,10 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>AR Astronaut on Table</title>
+  <title>AR Astronaut with Button</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- Model Viewer Library -->
   <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 
   <style>
@@ -17,39 +16,68 @@
     model-viewer {
       width: 100vw;
       height: 100vh;
-      background: transparent; /* Make background see-through */
+      background-color: transparent;
+    }
+
+    #placeBtn {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 14px 24px;
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 30px;
+      border: none;
+      background: #00ffcc;
+      color: black;
+      z-index: 10;
+      cursor: pointer;
     }
 
     #hint {
       position: fixed;
-      bottom: 20px;
+      bottom: 70px;
       left: 50%;
       transform: translateX(-50%);
       color: white;
       font-family: Arial, sans-serif;
       background: rgba(0,0,0,0.6);
-      padding: 10px 16px;
+      padding: 8px 14px;
       border-radius: 10px;
-      font-size: 14px;
+      font-size: 13px;
       z-index: 10;
+      text-align: center;
     }
   </style>
 </head>
 <body>
 
   <model-viewer
+    id="arModel"
     src="https://modelviewer.dev/shared-assets/models/Astronaut.glb"
     ar
     ar-modes="webxr scene-viewer quick-look"
     placement="floor"
     camera-controls
     shadow-intensity="1"
-    auto-rotate
-    ar-placement="automatic"
-    background-color="transparent"> <!-- Make AR background real -->
+    auto-rotate>
   </model-viewer>
 
-  <div id="hint">Move your phone • Astronaut appears automatically on table/floor</div>
+  <div id="hint">Move phone to scan table/floor</div>
+  <button id="placeBtn">Place Astronaut</button>
+
+  <script>
+    const modelViewer = document.getElementById("arModel");
+    const btn = document.getElementById("placeBtn");
+    const hint = document.getElementById("hint");
+
+    btn.addEventListener("click", () => {
+      // Activate AR mode
+      modelViewer.activateAR();
+      hint.innerText = "Tap anywhere on screen to place astronaut";
+    });
+  </script>
 
 </body>
 </html>
