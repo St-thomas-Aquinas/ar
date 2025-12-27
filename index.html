@@ -1,19 +1,71 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>Simple Web AR Object</title>
-    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  </head>
-  <body style="margin:0; overflow:hidden;">
-    <a-scene embedded vr-mode-ui="enabled: false" arjs="trackingMethod: best;">
-      
-      <!-- Camera -->
-      <a-entity camera look-controls position="0 0 0"></a-entity>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>WebXR AR Cube</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { margin: 0; overflow: hidden; }
+    #enter-ar {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 12px 20px;
+      background: #007bff;
+      color: white;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <button id="enter-ar">Enter AR</button>
+  <script type="module">
+    import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.157/build/three.module.js';
+    import { ARButton } from 'https://cdn.jsdelivr.net/npm/three@0.157/examples/jsm/webxr/ARButton.js';
 
-      <!-- Cube placed 1 meter in front of camera -->
-      <a-box position="0 0 -1" rotation="0 45 0" color="red" depth="0.5" height="0.5" width="0.5"></a-box>
+    let camera, scene, renderer, cube;
 
-    </a-scene>
-  </body>
+    // Scene
+    scene = new THREE.Scene();
+
+    // Camera
+    camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 20);
+
+    // Light
+    const light = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1);
+    scene.add(light);
+
+    // Cube 1m in front
+    const geometry = new THREE.BoxGeometry(0.2, 0.2, 0.2);
+    const material = new THREE.MeshStandardMaterial({ color: 0xff0000 });
+    cube = new THREE.Mesh(geometry, material);
+    cube.position.set(0, 0, -1);
+    scene.add(cube);
+
+    // Renderer
+    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.xr.enabled = true;
+    document.body.appendChild(renderer.domElement);
+
+    // AR Button
+    document.getElementById('enter-ar').addEventListener('click', () => {
+      document.body.removeChild(document.getElementById('enter-ar'));
+      document.body.appendChild(ARButton.createButton(renderer, { requiredFeatures: [] }));
+    });
+
+    // Render loop
+    function animate() {
+      renderer.setAnimationLoop(() => {
+        renderer.render(scene, camera);
+      });
+    }
+
+    animate();
+  </script>
+</body>
 </html>
