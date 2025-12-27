@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Auto AR Astronaut</title>
+  <title>AR Astronaut on Table</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <!-- Model Viewer Library -->
@@ -12,12 +12,12 @@
     body {
       margin: 0;
       overflow: hidden;
-      background: black;
     }
 
     model-viewer {
       width: 100vw;
       height: 100vh;
+      background: transparent; /* Make background see-through */
     }
 
     #hint {
@@ -45,10 +45,11 @@
     camera-controls
     shadow-intensity="1"
     auto-rotate
-    ar-placement="automatic">
+    ar-placement="automatic"
+    background-color="transparent"> <!-- Make AR background real -->
   </model-viewer>
 
-  <div id="hint">Scan your table/floor • Astronaut will appear automatically</div>
+  <div id="hint">Move your phone • Astronaut appears automatically on table/floor</div>
 
 </body>
 </html>
