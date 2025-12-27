@@ -1,13 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>VR Grab & Throw Demo</title>
+<style>
+  body { margin: 0; overflow: hidden; }
+  canvas { display: block; }
+</style>
+</head>
+<body>
+
 <script type="module">
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.module.js';
 import { VRButton } from 'https://cdn.jsdelivr.net/npm/three@0.158.0/examples/jsm/webxr/VRButton.js';
 import * as CANNON from 'https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/dist/cannon-es.js';
 
-// --- Three.js Scene ---
+// --- THREE.js Scene ---
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x222222);
 
-const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 100);
+const camera = new THREE.PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.1, 100);
 camera.position.set(0, 1.6, 3);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -27,63 +39,142 @@ world.gravity.set(0, -9.82, 0);
 
 // Floor
 const floorBody = new CANNON.Body({ type: CANNON.Body.STATIC, shape: new CANNON.Plane() });
-floorBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
+floorBody.quaternion.setFromEuler(-Math.PI/2, 0, 0);
 world.addBody(floorBody);
 
 const floorGeo = new THREE.PlaneGeometry(10, 10);
 const floorMat = new THREE.MeshStandardMaterial({ color: 0x777777 });
 const floorMesh = new THREE.Mesh(floorGeo, floorMat);
-floorMesh.rotation.x = -Math.PI / 2;
+floorMesh.rotation.x = -Math.PI/2;
 scene.add(floorMesh);
 
-// Physics Objects
+// --- Physics Objects ---
 const objects = [];
-function createCube(size = 0.5, position = { x:0, y:2, z:0 }) {
-  const body = new CANNON.Body({ mass:1, shape: new CANNON.Box(new CANNON.Vec3(size/2, size/2, size/2)), position: new CANNON.Vec3(position.x, position.y, position.z) });
+function createCube(size = 0.5, position = {x:0, y:2, z:0}) {
+  const body = new CANNON.Body({
+    mass: 1,
+    shape: new CANNON.Box(new CANNON.Vec3(size/2, size/2, size/2)),
+    position: new CANNON.Vec3(position.x, position.y, position.z),
+  });
   world.addBody(body);
+
   const geo = new THREE.BoxGeometry(size, size, size);
   const mat = new THREE.MeshStandardMaterial({ color: Math.random()*0xffffff });
   const mesh = new THREE.Mesh(geo, mat);
   scene.add(mesh);
-  objects.push({ body, mesh });
+
+  objects.push({ body, mesh, grabbed: false });
 }
 
-// Spawn 10 cubes
+// Spawn cubes
 for(let i=0;i<10;i++){
-  createCube(0.5,{x:(Math.random()-0.5)*4, y:2+i, z:(Math.random()-0.5)*4});
+  createCube(0.5, {x:(Math.random()-0.5)*4, y:2+i, z:(Math.random()-0.5)*4});
 }
 
-// VR Controllers
-const controller1 = renderer.xr.getController(0);
-const controller2 = renderer.xr.getController(1);
-scene.add(controller1, controller2);
+// --- VR Controllers ---
+const controllers = [];
+for(let i=0;i<2;i++){
+  const controller = renderer.xr.getController(i);
+  controller.userData.grabbed = null; // store grabbed object
+  controller.addEventListener('selectstart', onSelectStart);
+  controller.addEventListener('selectend', onSelectEnd);
+  scene.add(controller);
+  controllers.push(controller);
+}
 
+// --- Grab & Throw Logic ---
 function onSelectStart(event){
   const controller = event.target;
-  const tempPos = new THREE.Vector3();
-  controller.getWorldPosition(tempPos);
-  createCube(0.3, {x: tempPos.x, y: tempPos.y, z: tempPos.z});
+  const controllerPos = new THREE.Vector3();
+  controller.getWorldPosition(controllerPos);
+
+  // Find nearest object within reach
+  let nearest = null;
+  let minDist = 0.3; // max grab distance
+  for(const obj of objects){
+    if(!obj.grabbed){
+      const dist = obj.mesh.position.distanceTo(controllerPos);
+      if(dist < minDist){
+        nearest = obj;
+        minDist = dist;
+      }
+    }
+  }
+
+  if(nearest){
+    nearest.grabbed = true;
+    controller.userData.grabbed = nearest;
+
+    // Make physics body kinematic (follow controller)
+    nearest.body.type = CANNON.Body.KINEMATIC;
+    nearest.body.updateMassProperties();
+  }
 }
 
-controller1.addEventListener('selectstart', onSelectStart);
-controller2.addEventListener('selectstart', onSelectStart);
+function onSelectEnd(event){
+  const controller = event.target;
+  const grabbed = controller.userData.grabbed;
+  if(grabbed){
+    grabbed.grabbed = false;
+    controller.userData.grabbed = null;
 
-// Animate
+    // Return to dynamic body
+    grabbed.body.type = CANNON.Body.DYNAMIC;
+    grabbed.body.updateMassProperties();
+
+    // Give velocity based on controller movement
+    const velocity = new THREE.Vector3();
+    velocity.subVectors(controller.position, controller.userData.prevPos || controller.position);
+    velocity.multiplyScalar(60); // scale velocity
+    grabbed.body.velocity.set(velocity.x, velocity.y, velocity.z);
+  }
+}
+
+// Track previous controller position
+function updateControllerPositions(){
+  controllers.forEach(c=>{
+    c.userData.prevPos = c.position.clone();
+  });
+}
+
+// --- Animate Loop ---
 const clock = new THREE.Clock();
 function animate(){
   renderer.setAnimationLoop(render);
 }
+
 function render(){
   const dt = clock.getDelta();
   world.step(1/60, dt);
-  objects.forEach(o => { o.mesh.position.copy(o.body.position); o.mesh.quaternion.copy(o.body.quaternion); });
+
+  // Update grabbed objects to follow controllers
+  controllers.forEach(c=>{
+    if(c.userData.grabbed){
+      const obj = c.userData.grabbed;
+      const pos = new CANNON.Vec3().copy(c.position);
+      obj.body.position.copy(pos);
+      obj.body.velocity.set(0,0,0); // reset velocity
+    }
+  });
+
+  // Sync Three.js meshes
+  objects.forEach(o=>{
+    o.mesh.position.copy(o.body.position);
+    o.mesh.quaternion.copy(o.body.quaternion);
+  });
+
+  updateControllerPositions();
   renderer.render(scene, camera);
 }
+
 animate();
 
 window.addEventListener('resize', ()=>{
-  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.aspect = window.innerWidth/window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
 </script>
+
+</body>
+</html>
