@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>AR Astronaut Failsafe</title>
+  <title>AR Astronaut on Table</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <!-- Model Viewer Library -->
@@ -17,7 +17,7 @@
     model-viewer {
       width: 100vw;
       height: 100vh;
-      background-color: transparent; /* Camera feed visible */
+      background-color: transparent; /* Show real camera */
     }
 
     #placeBtn {
@@ -59,13 +59,13 @@
     src="https://modelviewer.dev/shared-assets/models/Astronaut.glb"
     ar
     ar-modes="webxr scene-viewer quick-look"
-    placement="floor"
+    placement="floor"          <!-- detects horizontal surfaces like table -->
     camera-controls
     shadow-intensity="1"
     auto-rotate>
   </model-viewer>
 
-  <div id="hint">Move phone to scan table/floor</div>
+  <div id="hint">Move phone slowly over the table</div>
   <button id="placeBtn">Place Astronaut</button>
 
   <script>
@@ -74,15 +74,16 @@
     const hint = document.getElementById("hint");
 
     btn.addEventListener("click", async () => {
-      // Activate AR session
       try {
+        // Start AR session
         await modelViewer.activateAR();
-        hint.innerText = "Tap anywhere on screen to place astronaut";
 
-        // Optional: hide the button after AR starts
+        hint.innerText = "Tap anywhere on your table to place the astronaut";
+
+        // Hide button after starting AR
         btn.style.display = "none";
       } catch (err) {
-        alert("AR could not start. Make sure you are on Android Chrome and camera access is allowed.");
+        alert("AR could not start. Make sure you are on Android Chrome and allowed camera access.");
       }
     });
   </script>
