@@ -1,12 +1,112 @@
-<div style="width: 100%; height: 600px;">
-  <iframe
-    title="."
-    src="https://sketchfab.com/models/9b0b079953b840bc9a13f524b60041e4/embed?autostart=1&ui_infos=0&ui_controls=1&ui_watermark=0"
-    frameborder="0"
-    allow="autoplay; fullscreen; xr-spatial-tracking"
-    allowfullscreen
-    webkitallowfullscreen
-    mozallowfullscreen
-    style="width: 100%; height: 100%;">
-  </iframe>
-</div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>3D Human Body Anatomy – VR Project</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f4f6f8;
+      color: #333;
+    }
+
+    header {
+      background-color: #1CAAD9;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    section {
+      padding: 20px;
+      max-width: 1000px;
+      margin: auto;
+    }
+
+    h2 {
+      color: #1CAAD9;
+    }
+
+    .instructions {
+      background-color: #ffffff;
+      padding: 15px;
+      border-left: 5px solid #1CAAD9;
+      margin-bottom: 20px;
+    }
+
+    .model-container {
+      width: 100%;
+      height: 600px;
+      background-color: #000;
+    }
+
+    footer {
+      text-align: center;
+      padding: 15px;
+      background-color: #eaeaea;
+      font-size: 14px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <h1>Interactive 3D Human Body Anatomy</h1>
+    <p>Web & Virtual Reality (VR) Educational Project</p>
+  </header>
+
+  <!-- ABOUT PROJECT -->
+  <section>
+    <h2>About This Project</h2>
+    <p>
+      This project demonstrates the human body anatomy using a 3D interactive model.
+      It is created using modern web technologies and supports Virtual Reality (VR),
+      allowing students to explore the human body in an immersive way.
+    </p>
+  </section>
+
+  <!-- INSTRUCTIONS -->
+  <section class="instructions">
+    <h2>How to Use</h2>
+    <ul>
+      <li>Rotate the model using your mouse or touch</li>
+      <li>Zoom in and out to view organs closely</li>
+      <li>Click <strong>Enter VR</strong> to experience in Virtual Reality</li>
+      <li>Works on mobile, laptop, and VR headsets</li>
+    </ul>
+  </section>
+
+  <!-- 3D MODEL -->
+  <section>
+    <h2>3D Human Body Model</h2>
+
+    <div class="model-container">
+      <iframe
+        title="Animated Full Human Body Anatomy"
+        src="https://sketchfab.com/models/9b0b079953b840bc9a13f524b60041e4/embed?autostart=1&ui_infos=0&ui_controls=1&ui_watermark=0"
+        frameborder="0"
+        allow="autoplay; fullscreen; xr-spatial-tracking"
+        allowfullscreen
+        webkitallowfullscreen
+        mozallowfullscreen
+        style="width:100%; height:100%;">
+      </iframe>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>
+      3D Model by AVRcontent (Sketchfab) <br>
+      Project created for educational purposes
+    </p>
+  </footer>
+
+</body>
+</html>
