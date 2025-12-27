@@ -12,8 +12,8 @@
   <style>
     body {
       margin: 0;
-      overflow: hidden;
       background: black;
+      overflow: hidden;
     }
 
     model-viewer {
@@ -21,17 +21,33 @@
       height: 100vh;
     }
 
-    #hint {
+    #placeBtn {
       position: fixed;
       bottom: 20px;
       left: 50%;
       transform: translateX(-50%);
+      padding: 14px 24px;
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 30px;
+      border: none;
+      background: #00ffcc;
+      color: black;
+      z-index: 10;
+    }
+
+    #hint {
+      position: fixed;
+      bottom: 70px;
+      left: 50%;
+      transform: translateX(-50%);
       color: white;
       background: rgba(0,0,0,0.6);
-      padding: 10px 16px;
+      padding: 8px 14px;
       border-radius: 10px;
       font-family: Arial, sans-serif;
-      font-size: 14px;
+      font-size: 13px;
+      z-index: 10;
     }
   </style>
 </head>
@@ -45,21 +61,22 @@
     ar-modes="webxr scene-viewer quick-look"
     placement="floor"
     shadow-intensity="1"
-    disable-zoom
-    disable-pan>
+    disable-pan
+    disable-zoom>
   </model-viewer>
 
-  <div id="hint">Move phone to scan floor • Tap to place 2</div>
+  <div id="hint">1) Move phone to scan floor<br>2) Tap PLACE OBJECT</div>
+
+  <button id="placeBtn">PLACE OBJECT</button>
 
   <script>
     const modelViewer = document.getElementById("arModel");
-    const hint = document.getElementById("hint");
+    const btn = document.getElementById("placeBtn");
 
-    modelViewer.addEventListener("ar-placement", () => {
-      // Lock the object after placement
-      modelViewer.setAttribute("disable-pan", "");
-      modelViewer.setAttribute("disable-zoom", "");
-      hint.innerText = "Object placed ✔️";
+    btn.addEventListener("click", () => {
+      // This opens AR mode (required by browser)
+      modelViewer.activateAR();
+      btn.innerText = "Now tap anywhere on screen";
     });
   </script>
 
