@@ -2,91 +2,110 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>AR Astronaut on Table</title>
+  <title>Web AR Table Placement</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <!-- Model Viewer Library -->
-  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
-
   <style>
-    body {
-      margin: 0;
-      overflow: hidden;
-    }
-
-    model-viewer {
-      width: 100vw;
-      height: 100vh;
-      background-color: transparent; /* Show real camera */
-    }
-
-    #placeBtn {
-      position: fixed;
+    body { margin: 0; overflow: hidden; }
+    #enter-ar {
+      position: absolute;
       bottom: 20px;
       left: 50%;
       transform: translateX(-50%);
-      padding: 14px 24px;
-      font-size: 16px;
-      font-weight: bold;
-      border-radius: 30px;
-      border: none;
-      background: #00ffcc;
-      color: black;
-      z-index: 10;
-      cursor: pointer;
-    }
-
-    #hint {
-      position: fixed;
-      bottom: 70px;
-      left: 50%;
-      transform: translateX(-50%);
+      padding: 12px 20px;
+      background: #007bff;
       color: white;
-      font-family: Arial, sans-serif;
-      background: rgba(0,0,0,0.6);
-      padding: 8px 14px;
-      border-radius: 10px;
-      font-size: 13px;
-      z-index: 10;
-      text-align: center;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
+  <button id="enter-ar">Enter AR</button>
+  <script type="module">
+    import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.157/build/three.module.js';
+    import { ARButton } from 'https://cdn.jsdelivr.net/npm/three@0.157/examples/jsm/webxr/ARButton.js';
 
-  <model-viewer
-    id="arModel"
-    src="https://modelviewer.dev/shared-assets/models/Astronaut.glb"
-    ar
-    ar-modes="webxr scene-viewer quick-look"
-    placement="floor"          <!-- detects horizontal surfaces like table -->
-    camera-controls
-    shadow-intensity="1"
-    auto-rotate>
-  </model-viewer>
+    let camera, scene, renderer, controller;
+    let reticle, cube;
 
-  <div id="hint">Move phone slowly over the table</div>
-  <button id="placeBtn">Place Astronaut</button>
+    init();
+    function init() {
+      scene = new THREE.Scene();
 
-  <script>
-    const modelViewer = document.getElementById("arModel");
-    const btn = document.getElementById("placeBtn");
-    const hint = document.getElementById("hint");
+      camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 20);
 
-    btn.addEventListener("click", async () => {
-      try {
-        // Start AR session
-        await modelViewer.activateAR();
+      const light = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1);
+      scene.add(light);
 
-        hint.innerText = "Tap anywhere on your table to place the astronaut";
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.xr.enabled = true;
+      document.body.appendChild(renderer.domElement);
 
-        // Hide button after starting AR
-        btn.style.display = "none";
-      } catch (err) {
-        alert("AR could not start. Make sure you are on Android Chrome and allowed camera access.");
+      document.body.appendChild(ARButton.createButton(renderer, { requiredFeatures: ['hit-test'] }));
+
+      // Reticle (indicator for placement)
+      reticle = new THREE.Mesh(
+        new THREE.RingGeometry(0.08, 0.1, 32).rotateX(-Math.PI / 2),
+        new THREE.MeshBasicMaterial({ color: 0x0fff0 })
+      );
+      reticle.visible = false;
+      scene.add(reticle);
+
+      // Cube to place
+      const geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
+      const material = new THREE.MeshStandardMaterial({ color: 0xff0000 });
+      cube = new THREE.Mesh(geometry, material);
+      cube.visible = false;
+      scene.add(cube);
+
+      // Controller for tap
+      controller = renderer.xr.getController(0);
+      controller.addEventListener('select', onSelect);
+      scene.add(controller);
+
+      renderer.setAnimationLoop(render);
+    }
+
+    function onSelect() {
+      if (reticle.visible) {
+        cube.position.setFromMatrixPosition(reticle.matrix);
+        cube.visible = true;
       }
-    });
-  </script>
+    }
 
+    function render(timestamp, frame) {
+      if (frame) {
+        const referenceSpace = renderer.xr.getReferenceSpace();
+        const session = renderer.xr.getSession();
+
+        if (!window.hitTestSourceRequested) {
+          session.requestReferenceSpace('viewer').then((viewerSpace) => {
+            session.requestHitTestSource({ space: viewerSpace }).then((source) => {
+              window.hitTestSource = source;
+            });
+          });
+          session.addEventListener('end', () => { window.hitTestSourceRequested = false; window.hitTestSource = null; });
+          window.hitTestSourceRequested = true;
+        }
+
+        if (window.hitTestSource) {
+          const hitTestResults = frame.getHitTestResults(window.hitTestSource);
+          if (hitTestResults.length > 0) {
+            const hit = hitTestResults[0];
+            const pose = hit.getPose(renderer.xr.getReferenceSpace());
+            reticle.visible = true;
+            reticle.matrix.fromArray(pose.transform.matrix);
+          } else {
+            reticle.visible = false;
+          }
+        }
+      }
+
+      renderer.render(scene, camera);
+    }
+  </script>
 </body>
 </html>
