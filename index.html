@@ -1,11 +1,10 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <title>Markerless AR App</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- Model Viewer Library -->
+  <!-- Model Viewer -->
   <script type="module"
     src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js">
   </script>
@@ -13,8 +12,8 @@
   <style>
     body {
       margin: 0;
-      background: black;
       overflow: hidden;
+      background: black;
     }
 
     model-viewer {
@@ -28,10 +27,10 @@
       left: 50%;
       transform: translateX(-50%);
       color: white;
-      font-family: Arial, sans-serif;
       background: rgba(0,0,0,0.6);
       padding: 10px 16px;
       border-radius: 10px;
+      font-family: Arial, sans-serif;
       font-size: 14px;
     }
   </style>
@@ -40,19 +39,29 @@
 <body>
 
   <model-viewer
+    id="arModel"
     src="https://modelviewer.dev/shared-assets/models/Astronaut.glb"
     ar
     ar-modes="webxr scene-viewer quick-look"
     placement="floor"
     shadow-intensity="1"
     disable-zoom
-    disable-pan
-    disable-tap>
+    disable-pan>
   </model-viewer>
 
-  <div id="hint">
-    Move phone to scan floor • Tap to place
-  </div>
+  <div id="hint">Move phone to scan floor • Tap to place</div>
+
+  <script>
+    const modelViewer = document.getElementById("arModel");
+    const hint = document.getElementById("hint");
+
+    modelViewer.addEventListener("ar-placement", () => {
+      // Lock the object after placement
+      modelViewer.setAttribute("disable-pan", "");
+      modelViewer.setAttribute("disable-zoom", "");
+      hint.innerText = "Object placed ✔️";
+    });
+  </script>
 
 </body>
 </html>
