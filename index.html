@@ -1,84 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <title>Markerless AR App</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <!-- Model Viewer -->
-  <script type="module"
-    src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js">
-  </script>
-
-  <style>
-    body {
-      margin: 0;
-      background: black;
-      overflow: hidden;
-    }
-
-    model-viewer {
-      width: 100vw;
-      height: 100vh;
-    }
-
-    #placeBtn {
-      position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      padding: 14px 24px;
-      font-size: 16px;
-      font-weight: bold;
-      border-radius: 30px;
-      border: none;
-      background: #00ffcc;
-      color: black;
-      z-index: 10;
-    }
-
-    #hint {
-      position: fixed;
-      bottom: 70px;
-      left: 50%;
-      transform: translateX(-50%);
-      color: white;
-      background: rgba(0,0,0,0.6);
-      padding: 8px 14px;
-      border-radius: 10px;
-      font-family: Arial, sans-serif;
-      font-size: 13px;
-      z-index: 10;
-    }
-  </style>
-</head>
-
-<body>
-
-  <model-viewer
-    id="arModel"
-    src="https://modelviewer.dev/shared-assets/models/Astronaut.glb"
-    ar
-    ar-modes="webxr scene-viewer quick-look"
-    placement="floor"
-    shadow-intensity="1"
-    disable-pan
-    disable-zoom>
-  </model-viewer>
-
-  <div id="hint">1) Move phone to scan floor<br>2) Tap PLACE OBJECT</div>
-
-  <button id="placeBtn">PLACE OBJECT</button>
-
-  <script>
-    const modelViewer = document.getElementById("arModel");
-    const btn = document.getElementById("placeBtn");
-
-    btn.addEventListener("click", () => {
-      // This opens AR mode (required by browser)
-      modelViewer.activateAR();
-      btn.innerText = "Now tap anywhere on screen";
-    });
-  </script>
-
-</body>
-</html>
+<model-viewer
+  src="https://modelviewer.dev/shared-assets/models/Astronaut.glb"
+  ar
+  ar-modes="webxr scene-viewer"
+  camera-controls
+  auto-rotate
+  placement="floor"
+  shadow-intensity="1">
+</model-viewer>
