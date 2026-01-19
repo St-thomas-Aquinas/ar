@@ -2,26 +2,42 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>Simple WebXR AR Demo</title>
+    <title>Touch Interaction AR Demo</title>
 
     <!-- A-Frame -->
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
 
-    <!-- AR.js for A-Frame -->
+    <!-- AR.js -->
     <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
+
+    <script>
+      // Touch interaction component
+      AFRAME.registerComponent('touch-rotate', {
+        init: function () {
+          this.el.addEventListener('click', () => {
+            this.el.setAttribute(
+              'rotation',
+              `0 ${Math.random() * 360} 0`
+            );
+          });
+        }
+      });
+    </script>
   </head>
 
   <body style="margin: 0; overflow: hidden;">
     <a-scene
       embedded
       arjs="sourceType: webcam; debugUIEnabled: false;"
+      cursor="rayOrigin: mouse"
     >
 
-      <!-- 3D Object -->
+      <!-- Small interactive cube -->
       <a-box
-        position="0 0.5 -1"
-        rotation="0 45 0"
-        color="red">
+        position="0 0.3 -1"
+        scale="0.2 0.2 0.2"
+        color="#4CC3D9"
+        touch-rotate>
       </a-box>
 
       <!-- Camera -->
